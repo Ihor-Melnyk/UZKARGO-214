@@ -6,7 +6,6 @@ function onTaskExecuteMainTask(routeStage) {
   var command = "RejectTask";
   if (CurrentDocument.inExtId) {
     if (routeStage.executionResult == "rejected") {
-
       var DocCommandData = {};
 
       DocCommandData.extSysDocID = CurrentDocument.id;
@@ -24,6 +23,8 @@ function onTaskExecuteMainTask(routeStage) {
         data: DocCommandData, // дані, що очікує зовнішня система для заданого методу
         executeAsync: false, // виконувати завдання асинхронно
       };
+
+      setHiddenReg();
     }
   }
 }
@@ -99,40 +100,39 @@ function sendComment(routeStage) {
 }
 
 function onTaskExecuteSendOutDoc(routeStage) {
-debugger
+  debugger;
   if (routeStage.executionResult == "executed") {
-    if(!EdocsApi.getAttributeValue("RegNumber").value){
-      throw 'Спочатку зареєструйте документ!'
-    } 
+    if (!EdocsApi.getAttributeValue("RegNumber").value) {
+      throw "Спочатку зареєструйте документ!";
+    }
     const state = EdocsApi.getCaseTaskDataByCode("ApproveRequest");
-    if (( state.state == "completed")) {
+    if (state.state == "completed") {
       sendCommand(routeStage);
       sendComment();
     }
-  } 
+  }
 }
 
-
 function onTaskExecuteApproveRequest(routeStage) {
-debugger
-    if (routeStage.executionResult == "executed") {
-      if(!EdocsApi.getAttributeValue("RegNumber").value){
-        throw 'Спочатку зареєструйте документ!'
-    } 
+  debugger;
+  if (routeStage.executionResult == "executed") {
+    if (!EdocsApi.getAttributeValue("RegNumber").value) {
+      throw "Спочатку зареєструйте документ!";
+    }
     const state = EdocsApi.getCaseTaskDataByCode("SendOutDoc");
-    if (( state.state == "completed")) {
+    if (state.state == "completed") {
       sendCommand(routeStage);
       sendComment();
     }
-    } 
+  }
 }
 
 //Скрипт 3. Неможливість внесення змін в поля карточки
-function setInitialDisabled(){
+function setInitialDisabled() {
   const stateTaskCheckDirectory = EdocsApi.getCaseTaskDataByCode("CheckDirectory").state;
   const stateTaskMainTask = EdocsApi.getCaseTaskDataByCode("MainTask").state;
 
-  if (stateTaskCheckDirectory == "inProgress" || stateTaskMainTask =="rejected"){
+  if (stateTaskCheckDirectory == "inProgress" || stateTaskMainTask == "rejected") {
     controlDisabled("Comment");
   } else {
     controlDisabled("Comment", false);
@@ -146,6 +146,13 @@ function controlDisabled(CODE, disabled = true) {
   EdocsApi.setControlProperties(control);
 }
 
+function controlHidden(CODE, hidden = true) {
+  debugger;
+  const control = EdocsApi.getControlProperties(CODE);
+  control.hidden = hidden;
+  EdocsApi.setControlProperties(control);
+}
+
 function onCreate() {
   setContractorOnCreate();
 }
@@ -154,14 +161,11 @@ function setContractorOnCreate() {
   debugger;
   try {
     const data = EdocsApi.getInExtAttributes(CurrentDocument.id.toString());
-    EdocsApi.setAttributeValue({ code: "ContractorRPEmail", value: data.tableAttributes.filter(x => x.code == "ContactPersonEmail").map(y => y.value)[0] });
+    EdocsApi.setAttributeValue({ code: "ContractorRPEmail", value: data.tableAttributes.filter((x) => x.code == "ContactPersonEmail").map((y) => y.value)[0] });
   } catch (e) {
     EdocsApi.setAttributeValue({ code: "ContractorRPEmail", value: "" });
   }
 }
-
-
-
 
 function sendStatusToEsign(routeStage, command) {
   var DocCommandData = {
@@ -209,4 +213,10 @@ function onTaskCommentedSendOutDoc(caseTaskComment) {
     data: methodData, // дані, що очікує зовнішня система для заданого методу
     executeAsync: true, // виконувати завдання асинхронно
   };
+}
+
+function setHiddenReg() {
+  controlHidden("Registraion");
+  controlHidden("RegDate");
+  controlHidden("RegNumber");
 }
