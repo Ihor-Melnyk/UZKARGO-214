@@ -23,8 +23,6 @@ function onTaskExecuteMainTask(routeStage) {
         data: DocCommandData, // дані, що очікує зовнішня система для заданого методу
         executeAsync: false, // виконувати завдання асинхронно
       };
-
-      setHiddenReg();
     }
   }
 }
@@ -46,6 +44,7 @@ function controlRequired(CODE, required = true) {
 function onCardInitialize() {
   setInitialRequired();
   setInitialDisabled();
+  setPropRegistration();
 }
 
 function sendCommand(routeStage) {
@@ -219,4 +218,21 @@ function setHiddenReg() {
   controlHidden("Registraion");
   controlHidden("RegDate");
   controlHidden("RegNumber");
+}
+
+function setPropRegistration() {
+  debugger;
+  var stateTaskApproveRequest = EdocsApi.getCaseTaskDataByCode("SendOutDoc")?.state;
+  var stateTaskApproveRequest = EdocsApi.getCaseTaskDataByCode("ApproveRequest")?.state;
+
+  if (stateTaskSendOutDoc == "assigned" || stateTaskSendOutDoc == "inProgress" || stateTaskSendOutDoc == "delegated" || stateTaskSendOutDoc == "completed" ||
+    stateTaskApproveRequest == "assigned" || stateTaskApproveRequest == "inProgress" || stateTaskApproveRequest == "delegated" || stateTaskApproveRequest == "completed") {
+    setPropertyHidden("Regisration", false);
+    setPropertyHidden("RegDate", false);
+    setPropertyHidden("RegNumber", false);
+  } else {
+    setPropertyHidden("Regisration");
+    setPropertyHidden("RegDate");
+    setPropertyHidden("RegNumber");
+  }
 }
